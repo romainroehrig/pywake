@@ -1,7 +1,4 @@
-# Running the wake parameterization over the AMMA case, as simulated with ARPEGE-Climat
-# Note it is not reproducible with the parameterization inline in ARPEGE-Climat
-# because of numerical roundoff in the ARPEGE-Climat output files
-# see run_example_ARPEGE_repro.py for a reproducible test.
+# Running the wake parameterization over the AMMA case, as simulated with ARPEGE-Climat, with reproducibility when inline in ARPEGE-Climat
 
 import sys, os
 sys.path.append('wakelib')
@@ -18,10 +15,10 @@ import wakelib
 # if lplot is True, some plot of input/output variables will be performed and saved in the directories below.
 lplot = True
 if lplot:
-    rep_images_in = './images/input'
+    rep_images_in = './images/input_repro'
     if not(os.path.exists(rep_images_in)):
         os.makedirs(rep_images_in)
-    rep_images_out = './images/output'
+    rep_images_out = './images/output_repro'
     if not(os.path.exists(rep_images_out)):
         os.makedirs(rep_images_out)
 
@@ -57,25 +54,25 @@ nlevp1 = nlev + 1 # Number of half levels
 time = np.arange(6*3600,24*3600,parameters['timestep'])/3600.
 nstep, = time.shape
 
-fin = 'files/Out_arp631.wake2.sigconv_CMIP6.wakeThermo.LPBLE_L91_300s_AMMA.nc'
+fin = 'files/Out_arp631.wake2.sigconv_CMIP6.wakeThermo.LPBLE_L91_300s_AMMA_repro.nc'
 
-var2read = ['znatsurf','p','ph','pi','te','qe','omgbe','dtdwn','dqdwn','amdwn','amup','dta','dqa','wgen','sigd0','cin','deltatw0','deltaqw0','sigmaw0','awdens0','wdens0']
+var2read = ['p','ph','pi','te','qe','omgbe','dtdwn','dqdwn','amdwn','amup','dta','dqa','wgen','sigd0','cin','deltatw0','deltaqw0','sigmaw0','awdens0','wdens0']
 
 datain = {} # contains input data
 f = netCDF4.Dataset(fin,'r')
 for var in var2read:
     #print var
-    datain[var] = f['wake_'+var][:]
+    datain[var] = f[var][:]
 
     if lplot: # plotting input data
         if len(datain[var].shape) == 2:
             nt,nlev_loc = datain[var].shape
             if nlev_loc == nlev:
-                lev = f['pf'][:,::-1]/100.
-                datain['pfax'] = f['pf'][:,::-1]/100.
+                lev = f['p'][:,:]/100.
+                datain['pfax'] = f['p'][:,:]/100.
             elif nlev_loc == nlevp1:
-                lev = f['ph'][:,::-1]/100.
-                datain['phax'] = f['ph'][:,::-1]/100.
+                lev = f['ph'][:,:]/100.
+                datain['phax'] = f['ph'][:,:]/100.
             else:
                 print 'nlev_loc unexpected:', nlev_loc
                 sys.exit()
@@ -110,6 +107,7 @@ datain['wdens']   = datain['wdens0']
 
 # Add a few more variables
 datain['timestep'] = parameters['timestep']
+datain['znatsurf'] = datain['sigmaw0']*0 + 1
 
 ###################
 # Executing the wake parameterization over nstep
