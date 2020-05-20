@@ -1,0 +1,8 @@
+# Compiled python librairies
+*.pyc
+# swp files
+*.swp
+# image directory
+images/
+# mac specific files
+**/.DS_Store
